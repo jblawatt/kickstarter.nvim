@@ -20,8 +20,6 @@ Kickstart.nvim is a template for your own configuration.
 
   And then you can explore or search through `:help lua-guide`
   - https://neovim.io/doc/user/lua-guide.html
-
-
 Kickstart Guide:
 
 I have left several `:help X` comments throughout the init.lua
@@ -132,13 +130,29 @@ require('lazy').setup({
     },
   },
 
+  { 'techtuner/aura-neovim' },
+  { 'jordst/colorscheme' },
+  -- { 'olivercederborg/poimandres.nvim' },
+  -- { 'LunarVim/horizon.nvim' },
+  { 'techygrrrl/techygrrrl-cmyk-colourrrs-neovim' },
+  { 'jascha030/nitepal.nvim' },
+  { 'maxmx03/fluoromachine.nvim' },
+  { 'loctvl842/monokai-pro.nvim' },
+  { 'hgoose/temple.vim' },
+  { 'RaphaeleL/my_vivid' },
+  { 'alek3y/spacegray.vim' },
+  { 'cseelus/nvim-colors-tone' },
+  { 'AndrewLockVI/dark_ocean.vim' },
+  { 'seandewar/paragon.vim' },
+
   {
     -- Theme inspired by Atom
-    'nyoom-engineering/oxocarbon.nvim',
+    -- 'nyoom-engineering/oxocarbon.nvim',
+    'jaredgorski/SpaceCamp',
     -- 'navarasu/onedark.nvim',
     priority = 1000,
     config = function()
-      vim.cmd.colorscheme 'oxocarbon'
+      vim.cmd.colorscheme 'aura'
     end,
   },
 
@@ -166,6 +180,18 @@ require('lazy').setup({
       show_trailing_blankline_indent = false,
     },
   },
+
+  {
+      's1n7ax/nvim-window-picker',
+      name = 'window-picker',
+      event = 'VeryLazy',
+      version = '2.*',
+      config = function()
+          require'window-picker'.setup()
+      end,
+  },
+
+  { "vim-test/vim-test" },
 
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
@@ -199,6 +225,16 @@ require('lazy').setup({
     },
     build = ':TSUpdate',
   },
+  {
+    "nvim-neo-tree/neo-tree.nvim",
+    branch = "v3.x",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
+      "MunifTanjim/nui.nvim",
+    }
+  },
+  { 'ThePrimeagen/refactoring.nvim' },
 
   { "Mofiqul/vscode.nvim" },
   { "kdheepak/lazygit.nvim" },
@@ -255,6 +291,10 @@ vim.o.breakindent = true
 
 -- Save undo history
 vim.o.undofile = true
+
+vim.o.tabstop = 4
+vim.o.shiftwidth = 4
+vim.o.expandtab = true
 
 -- Case-insensitive searching UNLESS \C or capital in search
 vim.o.ignorecase = true
@@ -456,12 +496,11 @@ end
 --  define the property 'filetypes' to the map in question.
 local servers = {
   -- clangd = {},
-  -- gopls = {},
-  -- pyright = {},
+  gopls = {},
+  pyright = {},
   -- rust_analyzer = {},
   -- tsserver = {},
-  -- html = { filetypes = { 'html', 'twig', 'hbs'} },
-
+  html = { filetypes = { 'html', 'twig', 'hbs' } },
   lua_ls = {
     Lua = {
       workspace = { checkThirdParty = false },
@@ -543,5 +582,28 @@ cmp.setup {
   },
 }
 
+require('refactoring').setup({
+  prompt_func_return_type = {
+    go = true,
+    java = false,
+    cpp = false,
+    c = false,
+    h = false,
+    hpp = false,
+    cxx = false,
+  },
+  prompt_func_param_type = {
+    go = true,
+    java = false,
+    cpp = false,
+    c = false,
+    h = false,
+    hpp = false,
+    cxx = false,
+  },
+  printf_statements = {},
+  print_var_statements = {},
+})
+--
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
