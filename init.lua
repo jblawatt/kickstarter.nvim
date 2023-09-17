@@ -90,7 +90,45 @@ require('lazy').setup({
       'folke/neodev.nvim',
     },
   },
+  {
+    'tamago324/nlsp-settings.nvim',
+    dependencies = {
+      { 'williamboman/nvim-lsp-installer' },
+    },
+    config = function()
+      local lsp_installer = require('nvim-lsp-installer')
+      local lspconfig = require("lspconfig")
+      local nlspsettings = require("nlspsettings")
 
+      nlspsettings.setup({
+        config_home = vim.fn.stdpath('config') .. '/nlsp-settings',
+        local_settings_dir = ".nlsp-settings",
+        local_settings_root_markers_fallback = { '.git' },
+        append_default_schemas = true,
+        loader = 'json'
+      })
+
+      function on_attach(client, bufnr)
+        local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
+        buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
+      end
+
+      local global_capabilities = vim.lsp.protocol.make_client_capabilities()
+      global_capabilities.textDocument.completion.completionItem.snippetSupport = true
+
+      lspconfig.util.default_config = vim.tbl_extend("force", lspconfig.util.default_config, {
+        capabilities = global_capabilities,
+      })
+
+      lsp_installer.on_server_ready(function(server)
+        server:setup({
+          on_attach = on_attach
+        })
+      end)
+    end
+  },
+  { 'rcarriga/nvim-notify' },
+  { 'mg979/vim-visual-multi', branch = 'master' },
   {
     -- Autocompletion
     'hrsh7th/nvim-cmp',
@@ -108,7 +146,7 @@ require('lazy').setup({
   },
 
   -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim',  opts = {} },
+  { 'folke/which-key.nvim', opts = {} },
   {
     -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
@@ -129,7 +167,53 @@ require('lazy').setup({
       end,
     },
   },
+  { "vim-test/vim-test" },
+  { "folke/neodev.nvim",    opts = {} },
+  {
+    "nvim-neotest/neotest",
+    dependencies = {
+      "nvim-neotest/neotest-python",
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+      "antoinemadec/FixCursorHold.nvim"
+    }
+  },
+  { "mbbill/undotree" },
+  { "towolf/vim-helm" },
+  { "mattn/emmet-vim" },
+  { "glench/vim-jinja2-syntax" },
+  {
+    "vifm/vifm.vim"
+  },
 
+  {
+    "catppuccin/nvim",
+    name = "catppuccin",
+    opts = {
+      term_colors = true,
+      transparent_background = true,
+      styles = {
+        comments = {},
+        conditionals = {},
+        loops = {},
+        functions = {},
+        keywords = {},
+        strings = {},
+        variables = {},
+        numbers = {},
+        booleans = {},
+        properties = {},
+        types = {},
+      },
+      color_overrides = {
+        mocha = {
+          base = "#000000",
+          mantle = "#000000",
+          crust = "#000000",
+        },
+      },
+    },
+  },
   { 'techtuner/aura-neovim' },
   { 'jordst/colorscheme' },
   -- { 'olivercederborg/poimandres.nvim' },
@@ -144,6 +228,27 @@ require('lazy').setup({
   { 'cseelus/nvim-colors-tone' },
   { 'AndrewLockVI/dark_ocean.vim' },
   { 'seandewar/paragon.vim' },
+  { "rose-pine/neovim",                           name = "rose-pine" },
+  { "kwsp/halcyon-neovim" },
+  { "bluz71/vim-moonfly-colors" },
+  {
+    "chrsm/paramount-ng.nvim",
+    dependencies = { "rktjmp/lush.nvim" }
+  },
+  { url = "https://gitlab.com/madyanov/gruber.vim", name = "madyanov-gruber-vim" },
+
+  -- new
+  { "ribru17/bamboo.nvim" },
+  { "rebelot/kanagawa.nvim" },
+  { "navarasu/onedark.nvim" },
+  { "nyoom-engineering/oxocarbon.nvim" },
+  { "bluz71/vim-moonfly-colors" },
+  { "AlexvZyl/nordic.nvim" },
+  { "mcchrish/zenbones.nvim" },
+  { "shaunsingh/moonlight.nvim" },
+  { "cpea2506/one_monokai.nvim" },
+
+  -- end new
 
   {
     -- Theme inspired by Atom
@@ -155,6 +260,7 @@ require('lazy').setup({
       vim.cmd.colorscheme 'aura'
     end,
   },
+
 
   {
     -- Set lualine as statusline
@@ -169,6 +275,13 @@ require('lazy').setup({
       },
     },
   },
+  {
+    "leoluz/nvim-dap-go",
+    config = function()
+      require("dap-go").setup()
+    end
+  },
+  { "mfussenegger/nvim-dap-python", config = function() require "dap-python".setup("python") end },
 
   {
     -- Add indentation guides even on blank lines
@@ -182,19 +295,19 @@ require('lazy').setup({
   },
 
   {
-      's1n7ax/nvim-window-picker',
-      name = 'window-picker',
-      event = 'VeryLazy',
-      version = '2.*',
-      config = function()
-          require'window-picker'.setup()
-      end,
+    's1n7ax/nvim-window-picker',
+    name = 'window-picker',
+    event = 'VeryLazy',
+    version = '2.*',
+    config = function()
+      require 'window-picker'.setup()
+    end,
   },
 
   { "vim-test/vim-test" },
 
   -- "gc" to comment visual regions/lines
-  { 'numToStr/Comment.nvim', opts = {} },
+  { 'numToStr/Comment.nvim',        opts = {} },
 
   -- Fuzzy Finder (files, lsp, etc)
   {
@@ -205,6 +318,7 @@ require('lazy').setup({
       -- Fuzzy Finder Algorithm which requires local dependencies to be built.
       -- Only load if `make` is available. Make sure you have the system
       -- requirements installed.
+      'nvim-telescope/telescope-symbols.nvim',
       {
         'nvim-telescope/telescope-fzf-native.nvim',
         -- NOTE: If you are having trouble with this installation,
@@ -215,8 +329,31 @@ require('lazy').setup({
         end,
       },
     },
+    config = function()
+      require 'telescope'.setup {
+        defaults = {
+          theme = "ivy"
+        },
+        extensions = {
+          file_browser = {
+            -- use the "ivy" theme if you want
+            theme = "ivy",
+          }
+        }
+      }
+    end,
+    -- config = function ()
+    --   require'telescope'.setup {
+    --     defaults = {
+    --       file_ignore_patterns = { "\\.venv" }
+    --     }
+    --   }
+    -- end
   },
-
+  {
+    "nvim-telescope/telescope-file-browser.nvim",
+    dependencies = { "nvim-telescope/telescope.nvim", "nvim-lua/plenary.nvim" }
+  },
   {
     -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
@@ -232,10 +369,27 @@ require('lazy').setup({
       "nvim-lua/plenary.nvim",
       "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
       "MunifTanjim/nui.nvim",
-    }
+    },
+    config = function()
+      require 'neo-tree'.setup {
+        filesystem = {
+          hijack_netrw_behavior = "disabled"
+        }
+      }
+    end
   },
   { 'ThePrimeagen/refactoring.nvim' },
-
+  {
+    'stevearc/oil.nvim',
+    opts = {},
+    -- Optional dependencies
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    config = function()
+      require 'oil'.setup {
+        default_file_explorer = false
+      }
+    end
+  },
   { "Mofiqul/vscode.nvim" },
   { "kdheepak/lazygit.nvim" },
 
@@ -252,7 +406,21 @@ require('lazy').setup({
       }
     end
   },
-
+  {
+    "nvim-pack/nvim-spectre",
+    dependencies = "nvim-lua/plenary.nvim",
+    config = function()
+      require("spectre").setup {
+      }
+    end
+  },
+  { "christoomey/vim-tmux-navigator" }, -- tmux & split window navigation
+  {
+    "simrat39/symbols-outline.nvim",
+    config = function()
+      require('symbols-outline').setup()
+    end
+  },
   -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
   --       These are some example plugins that I've included in the kickstart repository.
   --       Uncomment any of the lines below to enable them.
@@ -266,6 +434,8 @@ require('lazy').setup({
   --
   --    For additional information see: https://github.com/folke/lazy.nvim#-structuring-your-plugins
   -- { import = 'custom.plugins' },
+  { import = 'kickstart.plugins' }
+  --
 }, {})
 
 -- [[ Setting options ]]
@@ -315,13 +485,16 @@ vim.o.termguicolors = true
 
 -- [[ Basic Keymaps ]]
 
+vim.keymap.set("v", "<", "<gv", { noremap = true, silent = true })
+vim.keymap.set("v", ">", ">gv", { noremap = true, silent = true })
+
 -- Keymaps for better default experience
 -- See `:help vim.keymap.set()`
 vim.keymap.set({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
 
 -- Remap for dealing with word wrap
-vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
-vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
+-- vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
+-- vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
@@ -338,6 +511,7 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 -- See `:help telescope` and `:help telescope.setup()`
 require('telescope').setup {
   defaults = {
+    theme = "ivy",
     mappings = {
       i = {
         ['<C-u>'] = false,
@@ -349,6 +523,9 @@ require('telescope').setup {
 
 -- Enable telescope fzf native, if installed
 pcall(require('telescope').load_extension, 'fzf')
+
+-- Enable telescope file-browser
+pcall(require('telescope').load_extension, 'file_browser')
 
 -- See `:help telescope.builtin`
 vim.keymap.set('n', '<leader>?', require('telescope.builtin').oldfiles, { desc = '[?] Find recently opened files' })
@@ -367,6 +544,8 @@ vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc
 vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { desc = '[S]earch current [W]ord' })
 vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep, { desc = '[S]earch by [G]rep' })
 vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { desc = '[S]earch [D]iagnostics' })
+vim.keymap.set('n', '<leader>ld', require('telescope.builtin').lsp_document_symbols,
+  { desc = '[L]sp [D]ocument Symbols' })
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
@@ -510,7 +689,9 @@ local servers = {
 }
 
 -- Setup neovim lua configuration
-require('neodev').setup()
+require("neodev").setup({
+  library = { plugins = { "neotest" }, types = true },
+})
 
 -- nvim-cmp supports additional completion capabilities, so broadcast that to servers
 local capabilities = vim.lsp.protocol.make_client_capabilities()
@@ -607,3 +788,23 @@ require('refactoring').setup({
 --
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+vim.keymap.set('n', '<leader>e', ':Neotree toggle<CR>')
+
+vim.keymap.set('n', '<leader>tn', ':TestNearest<CR>')
+vim.keymap.set('n', '<leader>tf', ':TestFile<CR>')
+vim.keymap.set('n', '<leader>ts', ':TestSuite<CR>')
+vim.keymap.set('n', '<leader>tv', ':TestVisit<CR>')
+vim.keymap.set('n', '<leader>tl', ':TestLast<CR>')
+
+
+require("neotest").setup({
+  adapters = {
+    require("neotest-python")({
+      dap = { justMyCode = false },
+    }),
+    -- require("neotest-plenary"),
+    -- require("neotest-vim-test")({
+    --   ignore_file_types = { "python", "vim", "lua" },
+    -- }),
+  },
+})
