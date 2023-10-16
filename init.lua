@@ -127,7 +127,33 @@ require('lazy').setup({
       end)
     end
   },
-  { 'rcarriga/nvim-notify' },
+  {
+    "nvim-neorg/neorg",
+    build = ":Neorg sync-parsers",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    config = function()
+      require("neorg").setup {
+        load = {
+          ["core.defaults"] = {},  -- Loads default behaviour
+          ["core.concealer"] = {}, -- Adds pretty icons to your documents
+          ["core.dirman"] = {      -- Manages Neorg workspaces
+            config = {
+              workspaces = {
+                notes = "~/notes",
+              },
+            },
+          },
+        },
+      }
+    end,
+  },
+  -- {
+  --   "mhartington/formatter.nvim",
+  --   config = function()
+  --     require 'formatter'.setup()
+  --   end
+  -- },
+  -- { 'rcarriga/nvim-notify' },
   { 'mg979/vim-visual-multi', branch = 'master' },
   {
     -- Autocompletion
@@ -144,9 +170,14 @@ require('lazy').setup({
       'rafamadriz/friendly-snippets',
     },
   },
-
+  {
+    "ray-x/lsp_signature.nvim",
+    event = "VeryLazy",
+    opts = {},
+    config = function(_, opts) require 'lsp_signature'.setup(opts) end
+  },
   -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim', opts = {} },
+  { 'folke/which-key.nvim',   opts = {} },
   {
     -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
@@ -167,8 +198,40 @@ require('lazy').setup({
       end,
     },
   },
+  -- lazy.nvim
+  -- {
+  --   "folke/noice.nvim",
+  --   event = "VeryLazy",
+  --   opts = {
+  --     -- add any options here
+  --   },
+  --   dependencies = {
+  --     -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
+  --     "MunifTanjim/nui.nvim",
+  --     -- OPTIONAL:
+  --     --   `nvim-notify` is only needed, if you want to use the notification view.
+  --     --   If not available, we use `mini` as the fallback
+  --     "rcarriga/nvim-notify",
+  --   }
+  -- },
+  {
+    'stevearc/aerial.nvim',
+    opts = {},
+    -- Optional dependencies
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+      "nvim-tree/nvim-web-devicons"
+    },
+  },
+  {
+    'weirongxu/plantuml-previewer.vim',
+    dependencies = {
+      "tyru/open-browser.vim",
+      "aklt/plantuml-syntax",
+    }
+  },
   { "vim-test/vim-test" },
-  { "folke/neodev.nvim",    opts = {} },
+  { "folke/neodev.nvim", opts = {} },
   {
     "nvim-neotest/neotest",
     dependencies = {
@@ -182,16 +245,16 @@ require('lazy').setup({
   { "towolf/vim-helm" },
   { "mattn/emmet-vim" },
   { "glench/vim-jinja2-syntax" },
-  {
-    "vifm/vifm.vim"
-  },
+  { "vifm/vifm.vim" },
 
+  -- colorschemes
+  { "NLKNguyen/papercolor-theme" },
   {
     "catppuccin/nvim",
     name = "catppuccin",
     opts = {
       term_colors = true,
-      transparent_background = true,
+      transparent_background = false,
       styles = {
         comments = {},
         conditionals = {},
@@ -213,6 +276,13 @@ require('lazy').setup({
         },
       },
     },
+  },
+  { "Mofiqul/dracula.nvim" },
+  {
+    "folke/tokyonight.nvim",
+    lazy = true,
+    priority = 1000,
+    opts = {},
   },
   { 'techtuner/aura-neovim' },
   { 'jordst/colorscheme' },
@@ -255,10 +325,7 @@ require('lazy').setup({
     -- 'nyoom-engineering/oxocarbon.nvim',
     'jaredgorski/SpaceCamp',
     -- 'navarasu/onedark.nvim',
-    priority = 1000,
-    config = function()
-      vim.cmd.colorscheme 'aura'
-    end,
+    priority = 1000
   },
 
 
@@ -269,7 +336,8 @@ require('lazy').setup({
     opts = {
       options = {
         icons_enabled = false,
-        theme = 'onedark',
+        -- theme = 'onedark',
+        theme = 'auto',
         component_separators = '|',
         section_separators = '',
       },
@@ -361,6 +429,11 @@ require('lazy').setup({
       'nvim-treesitter/nvim-treesitter-textobjects',
     },
     build = ':TSUpdate',
+    config = function()
+      vim.o.foldmethod = "expr"
+      vim.o.foldexpr = "nvim_treesitter#foldexpr()"
+      vim.o.foldenable = false
+    end
   },
   {
     "nvim-neo-tree/neo-tree.nvim",
@@ -447,6 +520,7 @@ vim.o.hlsearch = false
 
 -- Make line numbers default
 vim.wo.number = true
+vim.wo.relativenumber = true
 
 -- Enable mouse mode
 vim.o.mouse = 'a'
@@ -496,6 +570,13 @@ vim.keymap.set({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
 -- vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 -- vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 
+vim.keymap.set({ 'n' }, '<C-k>', function()
+  require('lsp_signature').toggle_float_win()
+end, { silent = true, noremap = true, desc = 'toggle signature' })
+
+vim.keymap.set({ 'n' }, '<Leader>k', function()
+  vim.lsp.buf.signature_help()
+end, { silent = true, noremap = true, desc = 'toggle signature' })
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
 local highlight_group = vim.api.nvim_create_augroup('YankHighlight', { clear = true })
@@ -510,6 +591,11 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 -- [[ Configure Telescope ]]
 -- See `:help telescope` and `:help telescope.setup()`
 require('telescope').setup {
+  pickers = {
+    colorscheme = {
+      enable_preview = true
+    }
+  },
   defaults = {
     theme = "ivy",
     mappings = {
@@ -580,6 +666,10 @@ require('nvim-treesitter.configs').setup {
         ['if'] = '@function.inner',
         ['ac'] = '@class.outer',
         ['ic'] = '@class.inner',
+        ['ab'] = '@block.outer',
+        ['ib'] = '@block.inner',
+        ['al'] = '@loop.outer',
+        ['il'] = '@loop.inner',
       },
     },
     move = {
@@ -676,7 +766,15 @@ end
 local servers = {
   -- clangd = {},
   gopls = {},
-  pyright = {},
+  pyright = {
+    settings = {
+      python = {
+        formatting = {
+          provider = "black"
+        }
+      }
+    }
+  },
   -- rust_analyzer = {},
   -- tsserver = {},
   html = { filetypes = { 'html', 'twig', 'hbs' } },
@@ -808,3 +906,11 @@ require("neotest").setup({
     -- }),
   },
 })
+
+-- vim.cmd('autocmd ColorScheme * hi Normal ctermbg=None')
+
+vim.cmd.colorscheme 'PaperColor'
+
+if vim.g.neovide then
+  vim.o.guifont = "mononoki NFM:h14" -- text below applies for VimScript
+end
