@@ -63,9 +63,23 @@ vim.opt.rtp:prepend(lazypath)
 --  You can also configure plugins after the setup call,
 --    as they will be available in your neovim runtime.
 require('lazy').setup({
-    { "github/copilot.vim" },
+
+    {
+        "SmiteshP/nvim-navic",
+        dependencies = { "neovim/nvim-lspconfig" },
+        config = function()
+            require("nvim-navic").setup()
+        end,
+    },
+    {
+        'stevearc/dressing.nvim',
+        opts = {},
+    },
+    -- { "xarthurx/taskwarrior.vim" },
+    -- { "github/copilot.vim" },
     -- NOTE: First, some plugins that don't require any configuration
     { "rottencandy/vimkubectl" },
+    --
     -- Git related plugins
     'tpope/vim-fugitive',
     -- 'tpope/vim-rhubarb',
@@ -85,16 +99,28 @@ require('lazy').setup({
         "mfussenegger/nvim-lint",
         config = function()
             require('lint').linters_by_ft = {
-                python = { "pylint", "mypy", "ruff" }
+                python = {
+                    -- "pylint",
+                    "mypy",
+                    "ruff"
+                }
             }
+            vim.api.nvim_create_autocmd({ "BufWritePost" }, {
+                callback = function()
+                    require('lint').try_lint()
+                end,
+            })
         end
     },
+
+    -- 'dense-analysis/ale',
 
     -- NOTE: This is where your plugins related to LSP can be installed.
     --  The configuration is done below. Search for lspconfig to find it below.
     {
         -- LSP Configuration & Plugins
         'neovim/nvim-lspconfig',
+        opts = { inlay_hints = { enabled = true } },
         dependencies = {
             -- Automatically install LSPs to stdpath for neovim
             { 'williamboman/mason.nvim', config = true },
@@ -137,6 +163,10 @@ require('lazy').setup({
                 if vim.bo[bufnr].buftype ~= "" or vim.bo[bufnr].filetype == "helm" then
                     vim.diagnostic.disable()
                 end
+
+                -- if client.server_capabilities.documentSymbolProvider then
+                require("nvim-navic").attach(client, bufnr)
+                -- end
             end
 
             local global_capabilities = vim.lsp.protocol.make_client_capabilities()
@@ -153,26 +183,26 @@ require('lazy').setup({
             end)
         end
     },
-    {
-        "nvim-neorg/neorg",
-        build = ":Neorg sync-parsers",
-        dependencies = { "nvim-lua/plenary.nvim" },
-        config = function()
-            require("neorg").setup {
-                load = {
-                    ["core.defaults"] = {},  -- Loads default behaviour
-                    ["core.concealer"] = {}, -- Adds pretty icons to your documents
-                    ["core.dirman"] = {      -- Manages Neorg workspaces
-                        config = {
-                            workspaces = {
-                                notes = "~/notes",
-                            },
-                        },
-                    },
-                },
-            }
-        end,
-    },
+    -- {
+    --     "nvim-neorg/neorg",
+    --     build = ":Neorg sync-parsers",
+    --     dependencies = { "nvim-lua/plenary.nvim" },
+    --     config = function()
+    --         require("neorg").setup {
+    --             load = {
+    --                 ["core.defaults"] = {},  -- Loads default behaviour
+    --                 ["core.concealer"] = {}, -- Adds pretty icons to your documents
+    --                 ["core.dirman"] = {      -- Manages Neorg workspaces
+    --                     config = {
+    --                         workspaces = {
+    --                             notes = "~/notes",
+    --                         },
+    --                     },
+    --                 },
+    --             },
+    --         }
+    --     end,
+    -- },
     -- {
     --   "mhartington/formatter.nvim",
     --   config = function()
@@ -233,22 +263,6 @@ require('lazy').setup({
             end,
         },
     },
-    -- lazy.nvim
-    -- {
-    --     "folke/noice.nvim",
-    --     event = "VeryLazy",
-    --     opts = {
-    --         -- add any options here
-    --     },
-    --     dependencies = {
-    --         -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
-    --         "MunifTanjim/nui.nvim",
-    --         -- OPTIONAL:
-    --         --   `nvim-notify` is only needed, if you want to use the notification view.
-    --         --   If not available, we use `mini` as the fallback
-    --         "rcarriga/nvim-notify",
-    --     }
-    -- },
     {
         'stevearc/aerial.nvim',
         opts = {},
@@ -273,7 +287,8 @@ require('lazy').setup({
             "nvim-neotest/neotest-python",
             "nvim-lua/plenary.nvim",
             "nvim-treesitter/nvim-treesitter",
-            "antoinemadec/FixCursorHold.nvim"
+            "antoinemadec/FixCursorHold.nvim",
+            "nvim-neotest/nvim-nio"
         }
     },
     { "mbbill/undotree" },
@@ -283,12 +298,35 @@ require('lazy').setup({
     { "vifm/vifm.vim" },
 
     -- colorschemes
+    {
+        "ronisbr/nano-theme.nvim",
+        -- init = function()
+        --     vim.o.background = "light" -- or "dark".
+        -- end
+    },
+    {
+        "folke/tokyonight.nvim",
+        lazy = false,
+        priority = 1000,
+        opts = {},
+    },
+
+    { "ellisonleao/gruvbox.nvim" },
 
     { "projekt0n/github-nvim-theme" },
     { "sainnhe/everforest" },
     { "zootedb0t/citruszest.nvim" },
     { "nyngwang/nvimgelion" },
     { "miikanissi/modus-themes.nvim" },
+    {
+        'maxmx03/solarized.nvim',
+        lazy = false,
+        priority = 1000,
+        config = function()
+            -- vim.o.background = 'dark' -- or 'light'
+            -- vim.cmd.colorscheme 'solarized'
+        end,
+    },
 
     { "metalelf0/jellybeans-nvim" },
     { "marko-cerovac/material.nvim" },
@@ -324,12 +362,6 @@ require('lazy').setup({
         },
     },
     { "Mofiqul/dracula.nvim" },
-    {
-        "folke/tokyonight.nvim",
-        lazy = true,
-        priority = 1000,
-        opts = {},
-    },
     { 'techtuner/aura-neovim' },
     { 'jordst/colorscheme' },
     -- { 'RRethy/nvim-base16' },
@@ -354,7 +386,6 @@ require('lazy').setup({
     },
     { url = "https://gitlab.com/madyanov/gruber.vim", name = "madyanov-gruber-vim" },
 
-    -- new
     { "ribru17/bamboo.nvim" },
     { "rebelot/kanagawa.nvim" },
     { "navarasu/onedark.nvim" },
@@ -365,8 +396,8 @@ require('lazy').setup({
     { "shaunsingh/moonlight.nvim" },
     { "cpea2506/one_monokai.nvim" },
 
-    -- end new
-
+    { "ntk148v/komau.vim" },
+    { "dgox16/oldworld.nvim" },
     {
         -- Theme inspired by Atom
         -- 'nyoom-engineering/oxocarbon.nvim',
@@ -389,6 +420,15 @@ require('lazy').setup({
                 section_separators = '',
             },
         },
+        winbar = {
+            lualine_c = {
+                {
+                    "navic",
+                    color_correction = nil,
+                    navic_opts = nil
+                }
+            }
+        }
     },
     {
         "leoluz/nvim-dap-go",
@@ -396,7 +436,12 @@ require('lazy').setup({
             require("dap-go").setup()
         end
     },
-    { "mfussenegger/nvim-dap-python", config = function() require "dap-python".setup("python") end },
+    {
+        "mfussenegger/nvim-dap-python",
+        config = function()
+            require "dap-python".setup("python")
+        end
+    },
 
     {
         -- Add indentation guides even on blank lines
@@ -422,12 +467,8 @@ require('lazy').setup({
         end,
     },
 
-    { "vim-test/vim-test" },
-
     -- "gc" to comment visual regions/lines
     { 'numToStr/Comment.nvim',        opts = {} },
-
-    -- { 'dense-analysis/ale' },
 
     -- Fuzzy Finder (files, lsp, etc)
     {
@@ -539,7 +580,23 @@ require('lazy').setup({
             }
         end
     },
-    { "christoomey/vim-tmux-navigator" }, -- tmux & split window navigation
+    {
+        "christoomey/vim-tmux-navigator",
+        cmd = {
+            "TmuxNavigateLeft",
+            "TmuxNavigateDown",
+            "TmuxNavigateUp",
+            "TmuxNavigateRight",
+            "TmuxNavigatePrevious",
+        },
+        keys = {
+            { "<c-h>",  "<cmd><C-U>TmuxNavigateLeft<cr>" },
+            { "<c-j>",  "<cmd><C-U>TmuxNavigateDown<cr>" },
+            { "<c-k>",  "<cmd><C-U>TmuxNavigateUp<cr>" },
+            { "<c-l>",  "<cmd><C-U>TmuxNavigateRight<cr>" },
+            { "<c-\\>", "<cmd><C-U>TmuxNavigatePrevious<cr>" },
+        },
+    },
     {
         "simrat39/symbols-outline.nvim",
         config = function()
@@ -549,7 +606,9 @@ require('lazy').setup({
     -- {
     --     "ahmedkhalf/project.nvim",
     --     config = function()
-    --         require("project_nvim").setup()
+    --         require("project_nvim").setup({
+    --             patterns = { ".nvim-project" },
+    --         })
     --         require('telescope').load_extension('projects')
     --     end
     -- },
@@ -981,6 +1040,8 @@ vim.api.nvim_create_autocmd({ "BufWritePost" }, {
 })
 -- vim.cmd('autocmd ColorScheme * hi Normal ctermbg=None')
 
+vim.o.linebreak = true
+vim.o.swapfile = false
 
 -- vim.g.copilog_no_tab_mapped = true
 vim.g.copilot_assume_mapped = true
@@ -993,9 +1054,13 @@ vim.g.material_style = "darker"
 -- vim.cmd.colorscheme 'material'
 -- vim.cmd.colorscheme 'modus'
 -- vim.cmd.colorscheme 'aura'
+-- vim.cmd.colorscheme 'bamboo'
+-- vim.cmd.colorscheme 'gruvbox'
+-- vim.cmd.colorscheme 'monokai-pro-default'
+vim.cmd.colorscheme 'catppuccin'
 
-vim.cmd.colorscheme "oxocarbon"
-vim.cmd.highlight "Normal guibg=black guifg=white"
+-- vim.cmd.colorscheme "oxocarbon"
+--vim.cmd.highlight "Normal guibg=black guifg=white"
 
 if vim.g.neovide then
     -- vim.o.guifont = "mononoki NFM:h14" -- text below applies for VimScript
@@ -1004,5 +1069,29 @@ if vim.g.neovide then
     -- vim.o.guifont = "OxProto NF:h12"
     -- vim.o.guifont = "iMWritingMonoS NF:h14"
     -- vim.o.guifont = "MartianMono Nerd Font:h12"
-    vim.o.guifont = "IosevkaTermSlab Nerd Font:h14"
+    -- vim.o.guifont = "IosevkaTermSlab Nerd Font:h14"
+    -- vim.o.guifont = "ComicShannsMono Nerd Font Mono:h13"
+    vim.o.guifont = "Inconsolata Nerd Font Mono:h16"
 end
+
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "plantuml",
+    callback = function()
+        -- Führe den externen Befehl aus und speichere die Ausgabe
+        local handle = io.popen("cat `which plantuml` | grep plantuml.jar")
+        local result = handle:read("*a")
+        handle:close()
+
+        -- Extrahiere den Pfad zur plantuml.jar aus der Ausgabe
+        local jar_path = result:match('.*%s[\'"]?(%S+plantuml%.jar).*')
+
+        print(jar_path)
+
+        -- Setze die globale Variable, wenn ein Pfad gefunden wurde
+        if jar_path then
+            vim.g["plantuml_previewer#plantuml_jar_path"] = jar_path
+        end
+    end
+})
+
+vim.g.navic_silence = false
